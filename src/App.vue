@@ -1,17 +1,32 @@
 <template>
   <div id="app">
-    <img alt="Vue logo" src="./assets/logo.png" />
-    <HelloWorld msg="ASDAS to Your Vue.js App" />
+    <link
+      rel="stylesheet"
+      href="https://pro.fontawesome.com/releases/v5.10.0/css/all.css"
+      integrity="sha384-AYmEC3Yw5cVb3ZcuHtOA93w35dYTsvhLPVnYs9eStHfGJvOvKxVfELGroGkvsg+p"
+      crossorigin="anonymous"
+    />
+    <link rel="preconnect" href="https://fonts.gstatic.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Raleway&display=swap"
+      rel="stylesheet"
+    />
+
+    <div class="container instruction-text">
+      Click this button to record a song<br />
+      We will try to guess what genre it is
+    </div>
+    <RecordButton msg="ASDAS to Your Vue.js App" />
   </div>
 </template>
 
 <script>
-import HelloWorld from "./components/HelloWorld.vue";
+import RecordButton from "./components/RecordButton.vue";
 
 export default {
   name: "App",
   components: {
-    HelloWorld,
+    RecordButton,
   },
 };
 </script>
@@ -24,5 +39,12 @@ export default {
   text-align: center;
   color: #2c3e50;
   margin-top: 60px;
+}
+
+.instruction-text {
+  font-size: 2em;
+  color: #333333;
+  font-family: "Raleway", sans-serif;
+  text-align: center;
 }
 </style>

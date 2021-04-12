@@ -1,44 +1,37 @@
 <template>
   <div class="hello">
-    <link
-      rel="stylesheet"
-      href="https://pro.fontawesome.com/releases/v5.10.0/css/all.css"
-      integrity="sha384-AYmEC3Yw5cVb3ZcuHtOA93w35dYTsvhLPVnYs9eStHfGJvOvKxVfELGroGkvsg+p"
-      crossorigin="anonymous"
-    />
-    <link rel="preconnect" href="https://fonts.gstatic.com" />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Raleway&display=swap"
-      rel="stylesheet"
-    />
-
-    <div class="container instruction-text">
-      Click this button to record a song<br />
-      We will try to guess what genre it is
-    </div>
     <div class="container">
-      <button class="button" @click="addToAmethod">
+      <button class="button" v-if="!micError" @click="addToAmethod">
         <i id="mic" :class="isRecordingClass"></i>
       </button>
+      <p v-if="micError">I don't have permission to use the microphone 😢</p>
+      <button class="btn btn-default" id="start">Start</button>
+      <button class="btn btn-default" id="stop">Stop</button>
+      <div>
+        <ul class="list-unstyled" id="ul"></ul>
+      </div>
     </div>
   </div>
 </template>
 
 <script>
 export default {
-  name: "HelloWorld",
+  name: "RecordButton",
   props: {
     msg: String,
   },
   data() {
     return {
       isRecording: false,
+      micError: false,
     };
   },
   computed: {
     isRecordingClass: function () {
-      if (this.isRecording) return "fas fa-microphone microphone grow";
-      return "fas fa-microphone microphone grow is-recording";
+      var cls = "fas fa-microphone microphone grow";
+      if (this.isRecording) cls += " is-recording";
+      if (this.micError) cls += " transparent";
+      return cls;
     },
   },
   methods: {
@@ -46,6 +39,19 @@ export default {
       console.log("Hello");
     },
     addToAmethod: function () {
+      let constraints = { audio: true };
+      navigator.mediaDevices
+        .getUserMedia(constraints)
+        .then((stream) => {
+          console.log(stream);
+          console.log("FUNCIONA");
+        })
+        .catch((err) => {
+          if (err.name == "NotAllowedError") {
+            this.micError = true;
+          }
+        });
+
       console.log("triggering recording");
       this.isRecording = !this.isRecording;
       console.info(this.isRecording);
@@ -54,15 +60,11 @@ export default {
 };
 </script>
 
+<!--<script src="../scripts/record.js"></script> -->
+
+
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
-.instruction-text {
-  font-size: 3em;
-  color: #333333;
-  font-family: "Raleway", sans-serif;
-  text-align: center;
-}
-
 body {
   background: #e2e2e2;
   font-size: 62.5%;
@@ -71,6 +73,10 @@ body {
 .microphone {
   font-size: 4em;
   color: #d1d1d1;
+}
+
+.transparent {
+  color: rgba(1, 1, 1, 0);
 }
 
 .is-recording {
