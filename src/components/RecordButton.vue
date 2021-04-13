@@ -1,7 +1,7 @@
 <template>
   <div class="hello">
     <div class="container">
-      <button class="button" v-if="!micError" @click="addToAmethod">
+      <button class="button" v-if="!micError" @click="toggleRecording">
         <i id="mic" :class="isRecordingClass"></i>
       </button>
       <p v-if="micError">I don't have permission to use the microphone 😢</p>
@@ -9,6 +9,8 @@
       <button class="btn btn-default" id="stop">Stop</button>
       <div>
         <ul class="list-unstyled" id="ul"></ul>
+
+        <a :href="downloadUrl">Download here</a>
       </div>
     </div>
   </div>
@@ -24,6 +26,15 @@ export default {
     return {
       isRecording: false,
       micError: false,
+      stream: null,
+      recorder: null,
+      chunks: [],
+      mediaInfo: {
+        type: "audio/ogg",
+        ext: ".ogg",
+      },
+      count: 0,
+      downloadUrl: "",
     };
   },
   computed: {
@@ -38,32 +49,73 @@ export default {
     startRecording() {
       console.log("Hello");
     },
-    addToAmethod: function () {
-      let constraints = { audio: true };
-      navigator.mediaDevices
-        .getUserMedia(constraints)
-        .then((stream) => {
-          console.log(stream);
-          console.log("FUNCIONA");
-        })
-        .catch((err) => {
-          if (err.name == "NotAllowedError") {
-            this.micError = true;
-          }
+    async initializeRecorder() {
+      try {
+        this.stream = await navigator.mediaDevices.getUserMedia({
+          audio: true,
         });
-
+        this.recorder = new MediaRecorder(this.stream);
+      } catch (error) {
+        if (error.name == "NotAllowedError") {
+          this.micError = true;
+        }
+      }
+      console.log("Recorder outside");
+      console.log(this.recorder);
+    },
+    async toggleRecording() {
       console.log("triggering recording");
-      this.isRecording = !this.isRecording;
-      console.info(this.isRecording);
+      if (this.recorder == null) await this.initializeRecorder();
+
+      console.log("this recorder from toggleRecording");
+      console.log(this.recorder);
+
+      if (!this.isRecording) {
+        this.isRecording = true;
+        this.chunks = [];
+        this.recorder.start();
+
+        console.log("this recorder after starting:");
+        console.log(this.recorder);
+        return;
+      }
+
+      if (this.isRecording) {
+        this.recorder.stop();
+        this.isRecording = false;
+        this.recorder.ondataavailable = (e) => {
+          this.chunks.push(e.data);
+          if (this.recorder.state == "inactive") this.makeLink();
+        };
+        return;
+      }
+    },
+    makeLink() {
+      let blob = new Blob(this.chunks, { type: this.mediaInfo.type });
+      this.downloadUrl = URL.createObjectURL(blob);
+
+      // convert blob to base64
+      var reader = new FileReader();
+      reader.readAsDataURL(blob);
+      reader.onloadend = function () {
+        var base64data = reader.result;
+        console.log(base64data);
+      };
+
+      // download the file
+      // var a = document.createElement("a");
+      // a.href = this.downloadUrl;
+      // a.target = "_blank";
+      // a.download = "lkn_" + this.count + ".ogg";
+      // document.body.appendChild(a);
+      // a.click();
+
+      console.log("this.downloadUrl", this.downloadUrl);
     },
   },
 };
 </script>
 
-<!--<script src="../scripts/record.js"></script> -->
-
-
-<!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
 body {
   background: #e2e2e2;
