@@ -46,9 +46,6 @@ export default {
     },
   },
   methods: {
-    startRecording() {
-      console.log("Hello");
-    },
     async initializeRecorder() {
       try {
         this.stream = await navigator.mediaDevices.getUserMedia({
@@ -63,6 +60,23 @@ export default {
       console.log("Recorder outside");
       console.log(this.recorder);
     },
+    startRecording() {
+      this.isRecording = true;
+      this.chunks = [];
+
+      this.recorder.start();
+
+      console.log("this recorder after starting:");
+      console.log(this.recorder);
+    },
+    stopRecording() {
+      this.recorder.stop();
+      this.isRecording = false;
+      this.recorder.ondataavailable = (e) => {
+        this.chunks.push(e.data);
+        if (this.recorder.state == "inactive") this.makeLink();
+      };
+    },
     async toggleRecording() {
       console.log("triggering recording");
       if (this.recorder == null) await this.initializeRecorder();
@@ -71,22 +85,12 @@ export default {
       console.log(this.recorder);
 
       if (!this.isRecording) {
-        this.isRecording = true;
-        this.chunks = [];
-        this.recorder.start();
-
-        console.log("this recorder after starting:");
-        console.log(this.recorder);
+        this.startRecording();
         return;
       }
 
-      if (this.isRecording) {
-        this.recorder.stop();
-        this.isRecording = false;
-        this.recorder.ondataavailable = (e) => {
-          this.chunks.push(e.data);
-          if (this.recorder.state == "inactive") this.makeLink();
-        };
+      if (this.isRecording && this.recorder.state != "inactive") {
+        this.stopRecording();
         return;
       }
     },
