@@ -17,7 +17,7 @@
       We will try to guess what genre it is
     </div>
     <record-button v-model="audioContentBase64" />
-    <p>Base64 text:</p>
+    <p v-if="audioContentBase64 != ''">Base64 text:</p>
     <p>{{ audioContentBase64 }}</p>
   </div>
 </template>
