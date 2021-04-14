@@ -16,7 +16,9 @@
       Click this button to record a song<br />
       We will try to guess what genre it is
     </div>
-    <RecordButton msg="ASDAS to Your Vue.js App" />
+    <record-button v-model="audioContentBase64" />
+    <p>Base64 text:</p>
+    <p>{{ audioContentBase64 }}</p>
   </div>
 </template>
 
@@ -25,6 +27,11 @@ import RecordButton from "./components/RecordButton.vue";
 
 export default {
   name: "App",
+  data() {
+    return {
+      audioContentBase64: "",
+    };
+  },
   components: {
     RecordButton,
   },

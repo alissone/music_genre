@@ -5,13 +5,6 @@
         <i id="mic" :class="isRecordingClass"></i>
       </button>
       <p v-if="micError">I don't have permission to use the microphone 😢</p>
-      <button class="btn btn-default" id="start">Start</button>
-      <button class="btn btn-default" id="stop">Stop</button>
-      <div>
-        <ul class="list-unstyled" id="ul"></ul>
-
-        <a :href="downloadUrl">Download here</a>
-      </div>
     </div>
   </div>
 </template>
@@ -20,7 +13,7 @@
 export default {
   name: "RecordButton",
   props: {
-    msg: String,
+    value: String,
   },
   data() {
     return {
@@ -37,6 +30,7 @@ export default {
       downloadUrl: "",
     };
   },
+
   computed: {
     isRecordingClass: function () {
       var cls = "fas fa-microphone microphone grow";
@@ -45,6 +39,7 @@ export default {
       return cls;
     },
   },
+
   methods: {
     async initializeRecorder() {
       try {
@@ -57,18 +52,14 @@ export default {
           this.micError = true;
         }
       }
-      console.log("Recorder outside");
-      console.log(this.recorder);
     },
+
     startRecording() {
       this.isRecording = true;
       this.chunks = [];
-
       this.recorder.start();
-
-      console.log("this recorder after starting:");
-      console.log(this.recorder);
     },
+
     stopRecording() {
       this.recorder.stop();
       this.isRecording = false;
@@ -77,12 +68,9 @@ export default {
         if (this.recorder.state == "inactive") this.makeLink();
       };
     },
-    async toggleRecording() {
-      console.log("triggering recording");
-      if (this.recorder == null) await this.initializeRecorder();
 
-      console.log("this recorder from toggleRecording");
-      console.log(this.recorder);
+    async toggleRecording() {
+      if (this.recorder == null) await this.initializeRecorder();
 
       if (!this.isRecording) {
         this.startRecording();
@@ -94,27 +82,32 @@ export default {
         return;
       }
     },
-    makeLink() {
+
+    async makeLink() {
       let blob = new Blob(this.chunks, { type: this.mediaInfo.type });
       this.downloadUrl = URL.createObjectURL(blob);
 
-      // convert blob to base64
+      // Convert blob to base64
+      var data = "";
       var reader = new FileReader();
       reader.readAsDataURL(blob);
-      reader.onloadend = function () {
-        var base64data = reader.result;
-        console.log(base64data);
-      };
 
-      // download the file
+      const base64audio = await new Promise((resolve, reject) => {
+        reader.onloadend = function (event) {
+          resolve(reader.result);
+        };
+      });
+
+      this.$emit("input", base64audio);
+      this.$emit("link", this.downloadUrl);
+
+      // Download the file
       // var a = document.createElement("a");
       // a.href = this.downloadUrl;
       // a.target = "_blank";
       // a.download = "lkn_" + this.count + ".ogg";
       // document.body.appendChild(a);
       // a.click();
-
-      console.log("this.downloadUrl", this.downloadUrl);
     },
   },
 };
@@ -143,7 +136,6 @@ body {
   padding: 2em;
 }
 
-/* GENERAL BUTTON STYLING */
 button,
 button::after {
   -webkit-transition: all 0.5s;
