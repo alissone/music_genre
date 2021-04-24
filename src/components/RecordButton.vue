@@ -10,6 +10,9 @@
 </template>
 
 <script>
+import { MediaRecorder, register } from "extendable-media-recorder";
+import { connect } from "extendable-media-recorder-wav-encoder";
+
 export default {
   name: "RecordButton",
   props: {
@@ -42,11 +45,17 @@ export default {
 
   methods: {
     async initializeRecorder() {
+      await register(await connect());
+
       try {
         this.stream = await navigator.mediaDevices.getUserMedia({
           audio: true,
         });
-        this.recorder = new MediaRecorder(this.stream);
+        // this.recorder = new MediaRecorder(this.stream);
+
+        this.recorder = new MediaRecorder(this.stream, {
+          mimeType: "audio/wav",
+        });
       } catch (error) {
         if (error.name == "NotAllowedError") {
           this.micError = true;
